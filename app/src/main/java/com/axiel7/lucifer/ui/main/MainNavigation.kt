@@ -55,7 +55,8 @@ fun MainNavigation(
     navController: NavHostController,
     navActionManager: NavActionManager,
     lastTabOpened: Int,
-    isLoggedIn: Boolean,
+    isMalLoggedIn: Boolean,      // 🚀 MAL Lock
+    isSupabaseLoggedIn: Boolean, // 🚀 Supabase Lock
     isCompactScreen: Boolean,
     useListTabs: Boolean,
     modifier: Modifier,
@@ -96,7 +97,7 @@ fun MainNavigation(
             popExitTransition = { fadeOut() },
         ) {
             HomeView(
-                isLoggedIn = isLoggedIn,
+                isLoggedIn = isMalLoggedIn,
                 navActionManager = navActionManager,
                 padding = padding,
                 topBarHeightPx = topBarHeightPx,
@@ -120,7 +121,7 @@ fun MainNavigation(
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (!isLoggedIn) {
+            if (!isMalLoggedIn) {
                 LoginView()
             } else {
                 if (useListTabs) {
@@ -150,7 +151,7 @@ fun MainNavigation(
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (!isLoggedIn) {
+            if (!isMalLoggedIn) {
                 LoginView()
             } else {
                 if (useListTabs) {
@@ -184,7 +185,7 @@ fun MainNavigation(
                 padding = padding,
                 topBarHeightPx = topBarHeightPx,
                 topBarOffsetY = topBarOffsetY,
-                isLoggedIn = isLoggedIn
+                isLoggedIn = isMalLoggedIn
             )
         }
 
@@ -252,7 +253,7 @@ fun MainNavigation(
             typeMap = mapOf(typeOf<MediaType>() to MediaType.navType)
         ) {
             MediaDetailsView(
-                isLoggedIn = isLoggedIn,
+                isLoggedIn = isMalLoggedIn,
                 navActionManager = navActionManager
             )
         }
@@ -272,7 +273,7 @@ fun MainNavigation(
         }
 
         composable<Route.Profile> {
-            if (!isLoggedIn) {
+            if (!isMalLoggedIn) {
                 DefaultScaffoldWithTopAppBar(
                     title = stringResource(R.string.title_profile),
                     navigateBack = { navController.popBackStack() }
@@ -293,38 +294,18 @@ fun MainNavigation(
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (!isLoggedIn) {
+            if (!isSupabaseLoggedIn) {
                 SupabaseLoginView(
                     onLoginSuccess = { /* Handle success state */ }
                 )
             } else {
-                if (useListTabs) {
-                    UserMediaListWithTabsView(
-                        mediaType = MediaType.MOVIES,
-                        isCompactScreen = isCompactScreen,
-                        navActionManager = navActionManager,
-                        padding = padding
-                    )
-                } else {
-                    UserMediaListWithFabView(
-                        mediaType = MediaType.MOVIES,
-                        isCompactScreen = isCompactScreen,
-                        navActionManager = navActionManager,
-                        topBarHeightPx = topBarHeightPx,
-                        topBarOffsetY = topBarOffsetY,
-                        padding = padding
-                    )
-                }
+                CustomMediaListView(
+                    mediaType = MediaType.MOVIES.name,
+                    title = "Movies",
+                    padding = padding,
+                    navActionManager = navActionManager // 🚀 ADDED
+                )
             }
-        }
-
-        composable<Route.ExploreCategory> { backStackEntry ->
-            val args = backStackEntry.toRoute<Route.ExploreCategory>()
-            ExploreCategoryView(
-                category = args.category,
-                navActionManager = navActionManager,
-                padding = padding
-            )
         }
 
         // 🚀 LOCKED DOWN: Series Tab requires Supabase Auth
@@ -334,28 +315,17 @@ fun MainNavigation(
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (!isLoggedIn) {
+            if (!isSupabaseLoggedIn) {
                 SupabaseLoginView(
                     onLoginSuccess = { /* Handle success state */ }
                 )
             } else {
-                if (useListTabs) {
-                    UserMediaListWithTabsView(
-                        mediaType = MediaType.SERIES,
-                        isCompactScreen = isCompactScreen,
-                        navActionManager = navActionManager,
-                        padding = padding
-                    )
-                } else {
-                    UserMediaListWithFabView(
-                        mediaType = MediaType.SERIES,
-                        isCompactScreen = isCompactScreen,
-                        navActionManager = navActionManager,
-                        topBarHeightPx = topBarHeightPx,
-                        topBarOffsetY = topBarOffsetY,
-                        padding = padding
-                    )
-                }
+                CustomMediaListView(
+                    mediaType = MediaType.SERIES.name,
+                    title = "Series",
+                    padding = padding,
+                    navActionManager = navActionManager // 🚀 ADDED
+                )
             }
         }
 
@@ -366,28 +336,17 @@ fun MainNavigation(
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (!isLoggedIn) {
+            if (!isSupabaseLoggedIn) {
                 SupabaseLoginView(
                     onLoginSuccess = { /* Handle success state */ }
                 )
             } else {
-                if (useListTabs) {
-                    UserMediaListWithTabsView(
-                        mediaType = MediaType.GAMES,
-                        isCompactScreen = isCompactScreen,
-                        navActionManager = navActionManager,
-                        padding = padding
-                    )
-                } else {
-                    UserMediaListWithFabView(
-                        mediaType = MediaType.GAMES,
-                        isCompactScreen = isCompactScreen,
-                        navActionManager = navActionManager,
-                        topBarHeightPx = topBarHeightPx,
-                        topBarOffsetY = topBarOffsetY,
-                        padding = padding
-                    )
-                }
+                CustomMediaListView(
+                    mediaType = MediaType.GAMES.name,
+                    title = "Games",
+                    padding = padding,
+                    navActionManager = navActionManager // 🚀 ADDED
+                )
             }
         }
 
@@ -412,6 +371,7 @@ fun MainNavigation(
                 navActionManager = navActionManager
             )
         }
+
         composable<Route.Explore> {
             ExploreView(
                 navActionManager = navActionManager
@@ -423,7 +383,8 @@ fun MainNavigation(
             CustomMediaListView(
                 mediaType = route.mediaType,
                 title = route.title,
-                padding = padding
+                padding = padding,
+                navActionManager = navActionManager // 🚀 ADDED
             )
         }
     }

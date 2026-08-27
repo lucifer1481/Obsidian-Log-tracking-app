@@ -82,6 +82,25 @@ class MediaDetailsViewModel(
             }
         }
     }
+    // 🚀 NEW: Delete function
+    fun deleteExternalMedia(cloudMedia: CloudMedia) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // NOTE: Make sure `deleteMedia` exists in your SupabaseRepository!
+            // It might require `cloudMedia.id` or `cloudMedia.apiId` depending on how you wrote it.
+            val success = supabaseRepository.deleteMedia(cloudMedia)
+
+            if (success) {
+                savedCloudMedia = null // Clear local cache
+            }
+
+            mutableUiState.update {
+                it.copy(
+                    isSavedInSupabase = !success, // If deleted successfully, it's no longer saved
+                    message = if (success) "Removed from Library" else "Failed to remove."
+                )
+            }
+        }
+    }
 
     override fun getCharacters() {
         viewModelScope.launch(Dispatchers.IO) {

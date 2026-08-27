@@ -182,10 +182,14 @@ private fun MediaDetailsContent(
         SupabaseEditSheet(
             sheetState = sheetState,
             initialMedia = initialMedia,
+            isAlreadySaved = uiState.isSavedInSupabase, // 🚀 NEW: Enables the trash button
             bottomPadding = bottomBarPadding,
             onSave = { updatedMedia ->
-                // 🚀 FIXED: Send the UPDATED status/score straight to Supabase!
                 vm?.saveExternalMedia(updatedMedia)
+                hideSheet()
+            },
+            onDelete = { mediaToDelete ->               // 🚀 NEW: Triggers the delete function
+                vm?.deleteExternalMedia(mediaToDelete)
                 hideSheet()
             },
             onDismissed = { hideSheet() }

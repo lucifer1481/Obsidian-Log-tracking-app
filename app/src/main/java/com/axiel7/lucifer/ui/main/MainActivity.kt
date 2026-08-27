@@ -36,6 +36,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -89,11 +90,6 @@ class MainActivity : AppCompatActivity() {
         // 🚀 Handle Supabase OAuth deep links on app launch
         client.handleDeeplinks(intent)
 
-        // 🚀 Listen for Supabase session changes and update app state dynamically
-        client.handleDeeplinks(intent)
-
-        client.handleDeeplinks(intent)
-
         lifecycleScope.launch {
             client.auth.sessionStatus.collectLatest { status ->
                 if (status is SessionStatus.Authenticated) {
@@ -144,7 +140,14 @@ class MainActivity : AppCompatActivity() {
                     TabletMode.NEVER -> true
                 }
 
+                // 🚀 Lock 1: MAL
                 val accessToken by viewModel.accessToken.collectAsStateWithLifecycle(App.accessToken)
+                val isMalLoggedIn = !accessToken.isNullOrEmpty()
+
+                // 🚀 Lock 2: Supabase
+                val supabaseStatus by client.auth.sessionStatus.collectAsState(initial = SessionStatus.Initializing)
+                val isSupabaseLoggedIn = supabaseStatus is SessionStatus.Authenticated
+
                 val useListTabs by viewModel.useListTabs.collectAsStateWithLifecycle()
                 val profilePicture by viewModel.profilePicture.collectAsStateWithLifecycle()
                 val pinnedNavBar by viewModel.pinnedNavBar.collectAsStateWithLifecycle(false)
@@ -160,7 +163,8 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         MainView(
                             isCompactScreen = isCompactScreen,
-                            isLoggedIn = !accessToken.isNullOrEmpty(),
+                            isMalLoggedIn = isMalLoggedIn,       // Pass MAL Lock
+                            isSupabaseLoggedIn = isSupabaseLoggedIn, // Pass Supabase Lock
                             useListTabs = useListTabs,
                             navController = navController,
                             navActionManager = navActionManager,
@@ -266,7 +270,8 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun MainView(
     isCompactScreen: Boolean,
-    isLoggedIn: Boolean = !accessToken.isNullOrEmpty() || client.auth.currentSessionOrNull() != null,
+    isMalLoggedIn: Boolean,
+    isSupabaseLoggedIn: Boolean,
     useListTabs: Boolean,
     navController: NavHostController,
     navActionManager: NavActionManager,
@@ -328,7 +333,8 @@ fun MainView(
                     navController = navController,
                     navActionManager = navActionManager,
                     lastTabOpened = lastTabOpened,
-                    isLoggedIn = isLoggedIn,
+                    isMalLoggedIn = isMalLoggedIn,           // Pass MAL Lock
+                    isSupabaseLoggedIn = isSupabaseLoggedIn, // Pass Supabase Lock
                     isCompactScreen = false,
                     useListTabs = useListTabs,
                     modifier = Modifier,
@@ -345,7 +351,8 @@ fun MainView(
                 navController = navController,
                 navActionManager = navActionManager,
                 lastTabOpened = lastTabOpened,
-                isLoggedIn = isLoggedIn,
+                isMalLoggedIn = isMalLoggedIn,           // Pass MAL Lock
+                isSupabaseLoggedIn = isSupabaseLoggedIn, // Pass Supabase Lock
                 isCompactScreen = true,
                 useListTabs = useListTabs,
                 modifier = Modifier.padding(
@@ -373,7 +380,8 @@ fun MainPreview() {
         Surface {
             MainView(
                 isCompactScreen = true,
-                isLoggedIn = false,
+                isMalLoggedIn = false,
+                isSupabaseLoggedIn = false,
                 useListTabs = false,
                 navController = rememberNavController(),
                 navActionManager = rememberNavActionManager(),

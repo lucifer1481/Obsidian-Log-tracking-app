@@ -207,7 +207,10 @@ private fun UserMediaListWithFabViewContent(
                         contentDescription = "status",
                         modifier = Modifier.padding(end = 8.dp)
                     )
-                    Text(text = uiState.listStatus?.localized() ?: stringResource(R.string.loading))
+                    // 🚀 FIXED: Dynamic label for FAB based on current media type
+                    Text(
+                        text = getDynamicStatusLabel(uiState.mediaType, uiState.listStatus)
+                    )
                 }
             }
         },
@@ -236,7 +239,30 @@ private fun UserMediaListWithFabViewContent(
                 }
             )
         }
-    }//:Scaffold
+    }
+}
+
+// 🚀 NEW: Helper function to map raw enum names to correct tab-specific terms
+@Composable
+fun getDynamicStatusLabel(mediaType: MediaType, status: ListStatus?): String {
+    if (status == null) return stringResource(R.string.loading)
+
+    return when (status.name) {
+        "WATCHING", "READING" -> when (mediaType) {
+            MediaType.GAMES -> "Playing"
+            MediaType.MANGA -> "Reading"
+            else -> "Watching"
+        }
+        "PLAN_TO_WATCH", "PLAN_TO_READ" -> when (mediaType) {
+            MediaType.GAMES -> "Plan to Play"
+            MediaType.MANGA -> "Plan to Read"
+            else -> "Plan to Watch"
+        }
+        "COMPLETED" -> "Completed"
+        "ON_HOLD" -> "On Hold"
+        "DROPPED" -> "Dropped"
+        else -> status.name.lowercase().replaceFirstChar { it.uppercase() }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -276,8 +302,9 @@ fun ListStatusSheet(
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
+                    // 🚀 FIXED: Dynamic label for Bottom Sheet based on current media type
                     Text(
-                        text = it.localized(),
+                        text = getDynamicStatusLabel(mediaType, it),
                         modifier = Modifier.padding(start = 8.dp),
                         color = if (isSelected) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant

@@ -10,6 +10,7 @@ import com.axiel7.lucifer.data.repository.DefaultPreferencesRepository
 import com.axiel7.lucifer.ui.base.viewmodel.BaseViewModel
 import com.axiel7.lucifer.utils.SeasonCalendar
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,6 +26,11 @@ class HomeViewModel(
 
     override fun initRequestChain(isLoggedIn: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
+            // 🚀 FIX: Add a brief delay on cold start to let the MAL token refresh in the background
+            if (mutableUiState.value.todayAnimes.isEmpty() && mutableUiState.value.seasonAnimes.isEmpty()) {
+                delay(1000)
+            }
+
             mutableUiState.update { it.copy(isLoading = true) }
             mutableUiState.value.run {
                 if (todayAnimes.isEmpty()) getTodayAiringAnimes()
@@ -35,7 +41,7 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun getTodayAiringAnimes() {
+    private suspend fun getTodayAiringAnimes(retryCount: Int = 0) {
         val result = animeRepository.getAnimeRanking(
             rankingType = RankingType.AIRING,
             limit = 100,
@@ -55,11 +61,18 @@ class HomeViewModel(
             tempList.sortByDescending { it.node.broadcast?.startTime }
             mutableUiState.update { it.copy(todayAnimes = tempList) }
         } else {
-            showMessage(result.message ?: result.error)
+            // 🚀 FIX: Smart retry if the token was caught mid-refresh
+            val isTokenError = result.error?.contains("invalid_token") == true || result.message?.contains("invalid_token") == true
+            if (isTokenError && retryCount < 2) {
+                delay(1500)
+                getTodayAiringAnimes(retryCount + 1)
+            } else {
+                showMessage(result.message ?: result.error)
+            }
         }
     }
 
-    private suspend fun getSeasonAnimes() {
+    private suspend fun getSeasonAnimes(retryCount: Int = 0) {
         val currentStartSeason = SeasonCalendar.currentStartSeason
         val result = animeRepository.getSeasonalAnimes(
             sort = MediaSort.SCORE,
@@ -70,18 +83,32 @@ class HomeViewModel(
         if (result.data != null) {
             mutableUiState.update { it.copy(seasonAnimes = result.data) }
         } else {
-            showMessage(result.message ?: result.error)
+            // 🚀 FIX: Smart retry
+            val isTokenError = result.error?.contains("invalid_token") == true || result.message?.contains("invalid_token") == true
+            if (isTokenError && retryCount < 2) {
+                delay(1500)
+                getSeasonAnimes(retryCount + 1)
+            } else {
+                showMessage(result.message ?: result.error)
+            }
         }
     }
 
-    private suspend fun getRecommendedAnimes() {
+    private suspend fun getRecommendedAnimes(retryCount: Int = 0) {
         val result = animeRepository.getRecommendedAnimes(
             limit = 25
         )
         if (result.data != null) {
             mutableUiState.update { it.copy(recommendedAnimes = result.data) }
         } else {
-            showMessage(result.message ?: result.error)
+            // 🚀 FIX: Smart retry
+            val isTokenError = result.error?.contains("invalid_token") == true || result.message?.contains("invalid_token") == true
+            if (isTokenError && retryCount < 2) {
+                delay(1500)
+                getRecommendedAnimes(retryCount + 1)
+            } else {
+                showMessage(result.message ?: result.error)
+            }
         }
     }
 
