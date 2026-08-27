@@ -33,7 +33,16 @@
             android:name=".ui.main.MainActivity"
             android:theme="@style/AppTheme"
             android:configChanges="keyboard|orientation|screenSize"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
+
+            <!-- 🚀 Supabase OAuth Deep Link Handler -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="lucifer" android:host="login-callback" />
+            </intent-filter>
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

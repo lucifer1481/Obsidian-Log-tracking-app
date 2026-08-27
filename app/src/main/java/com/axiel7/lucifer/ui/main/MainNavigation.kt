@@ -34,6 +34,7 @@ import com.axiel7.lucifer.ui.explore.ExploreView
 import com.axiel7.lucifer.ui.fullposter.FullPosterView
 import com.axiel7.lucifer.ui.home.HomeView
 import com.axiel7.lucifer.ui.login.LoginView
+import com.axiel7.lucifer.ui.login.SupabaseLoginView
 import com.axiel7.lucifer.ui.more.MoreView
 import com.axiel7.lucifer.ui.more.about.AboutView
 import com.axiel7.lucifer.ui.more.credits.CreditsView
@@ -64,7 +65,7 @@ fun MainNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination =Route.Splash,
+        startDestination = Route.Splash,
         modifier = modifier,
         enterTransition = {
             fadeIn(
@@ -105,7 +106,6 @@ fun MainNavigation(
         composable<Route.Splash> {
             com.axiel7.lucifer.ui.splash.SplashView(
                 onSplashFinished = {
-                    // 🚀 FIXED: Changed Route.Home to Route.Tab.Home to match your app's structure!
                     navController.navigate(Route.Tab.Home) {
                         popUpTo(Route.Splash) { inclusive = true }
                     }
@@ -286,31 +286,38 @@ fun MainNavigation(
             }
         }
 
-        // 🚀 FIXED: Added independent composables for each custom Tab so Compose Navigation can switch between them!
+        // 🚀 LOCKED DOWN: Movies Tab requires Supabase Auth
         composable<Route.Tab.Movies>(
             enterTransition = { fadeIn() },
             exitTransition = { fadeOut() },
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (useListTabs) {
-                UserMediaListWithTabsView(
-                    mediaType = MediaType.MOVIES,
-                    isCompactScreen = isCompactScreen,
-                    navActionManager = navActionManager,
-                    padding = padding
+            if (!isLoggedIn) {
+                SupabaseLoginView(
+                    onLoginSuccess = { /* Handle success state */ }
                 )
             } else {
-                UserMediaListWithFabView(
-                    mediaType = MediaType.MOVIES,
-                    isCompactScreen = isCompactScreen,
-                    navActionManager = navActionManager,
-                    topBarHeightPx = topBarHeightPx,
-                    topBarOffsetY = topBarOffsetY,
-                    padding = padding
-                )
+                if (useListTabs) {
+                    UserMediaListWithTabsView(
+                        mediaType = MediaType.MOVIES,
+                        isCompactScreen = isCompactScreen,
+                        navActionManager = navActionManager,
+                        padding = padding
+                    )
+                } else {
+                    UserMediaListWithFabView(
+                        mediaType = MediaType.MOVIES,
+                        isCompactScreen = isCompactScreen,
+                        navActionManager = navActionManager,
+                        topBarHeightPx = topBarHeightPx,
+                        topBarOffsetY = topBarOffsetY,
+                        padding = padding
+                    )
+                }
             }
         }
+
         composable<Route.ExploreCategory> { backStackEntry ->
             val args = backStackEntry.toRoute<Route.ExploreCategory>()
             ExploreCategoryView(
@@ -320,53 +327,67 @@ fun MainNavigation(
             )
         }
 
+        // 🚀 LOCKED DOWN: Series Tab requires Supabase Auth
         composable<Route.Tab.Series>(
             enterTransition = { fadeIn() },
             exitTransition = { fadeOut() },
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (useListTabs) {
-                UserMediaListWithTabsView(
-                    mediaType = MediaType.SERIES,
-                    isCompactScreen = isCompactScreen,
-                    navActionManager = navActionManager,
-                    padding = padding
+            if (!isLoggedIn) {
+                SupabaseLoginView(
+                    onLoginSuccess = { /* Handle success state */ }
                 )
             } else {
-                UserMediaListWithFabView(
-                    mediaType = MediaType.SERIES,
-                    isCompactScreen = isCompactScreen,
-                    navActionManager = navActionManager,
-                    topBarHeightPx = topBarHeightPx,
-                    topBarOffsetY = topBarOffsetY,
-                    padding = padding
-                )
+                if (useListTabs) {
+                    UserMediaListWithTabsView(
+                        mediaType = MediaType.SERIES,
+                        isCompactScreen = isCompactScreen,
+                        navActionManager = navActionManager,
+                        padding = padding
+                    )
+                } else {
+                    UserMediaListWithFabView(
+                        mediaType = MediaType.SERIES,
+                        isCompactScreen = isCompactScreen,
+                        navActionManager = navActionManager,
+                        topBarHeightPx = topBarHeightPx,
+                        topBarOffsetY = topBarOffsetY,
+                        padding = padding
+                    )
+                }
             }
         }
 
+        // 🚀 LOCKED DOWN: Games Tab requires Supabase Auth
         composable<Route.Tab.Games>(
             enterTransition = { fadeIn() },
             exitTransition = { fadeOut() },
             popEnterTransition = { fadeIn() },
             popExitTransition = { fadeOut() },
         ) {
-            if (useListTabs) {
-                UserMediaListWithTabsView(
-                    mediaType = MediaType.GAMES,
-                    isCompactScreen = isCompactScreen,
-                    navActionManager = navActionManager,
-                    padding = padding
+            if (!isLoggedIn) {
+                SupabaseLoginView(
+                    onLoginSuccess = { /* Handle success state */ }
                 )
             } else {
-                UserMediaListWithFabView(
-                    mediaType = MediaType.GAMES,
-                    isCompactScreen = isCompactScreen,
-                    navActionManager = navActionManager,
-                    topBarHeightPx = topBarHeightPx,
-                    topBarOffsetY = topBarOffsetY,
-                    padding = padding
-                )
+                if (useListTabs) {
+                    UserMediaListWithTabsView(
+                        mediaType = MediaType.GAMES,
+                        isCompactScreen = isCompactScreen,
+                        navActionManager = navActionManager,
+                        padding = padding
+                    )
+                } else {
+                    UserMediaListWithFabView(
+                        mediaType = MediaType.GAMES,
+                        isCompactScreen = isCompactScreen,
+                        navActionManager = navActionManager,
+                        topBarHeightPx = topBarHeightPx,
+                        topBarOffsetY = topBarOffsetY,
+                        padding = padding
+                    )
+                }
             }
         }
 
@@ -397,7 +418,6 @@ fun MainNavigation(
             )
         }
 
-        // Custom Media Route for our new Supabase screens
         composable<Route.CustomMedia> { backStackEntry ->
             val route = backStackEntry.toRoute<Route.CustomMedia>()
             CustomMediaListView(

@@ -1,5 +1,6 @@
 package com.axiel7.lucifer.data.network
 
+import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 
@@ -14,6 +15,10 @@ object SupabaseApi {
         supabaseUrl = SUPABASE_URL,
         supabaseKey = SUPABASE_KEY
     ) {
+        install(Auth) {
+            scheme = "lucifer"
+            host = "login-callback"
+        }
         install(Postgrest)
     }
 }

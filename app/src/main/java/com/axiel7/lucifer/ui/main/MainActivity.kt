@@ -3,6 +3,12 @@ package com.axiel7.lucifer.ui.main
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
+import com.axiel7.lucifer.data.network.SupabaseApi.client
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -48,6 +54,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.axiel7.lucifer.App
+import com.axiel7.lucifer.App.Companion.accessToken
 import com.axiel7.lucifer.data.model.media.MediaType
 import com.axiel7.lucifer.ui.base.BottomDestination.Companion.isBottomDestination
 import com.axiel7.lucifer.ui.base.BottomDestination.Companion.toBottomDestinationIndex
@@ -63,6 +70,7 @@ import com.axiel7.lucifer.ui.theme.dark_scrim
 import com.axiel7.lucifer.ui.theme.light_scrim
 import com.axiel7.lucifer.utils.ContextExtensions.openLink
 import com.axiel7.lucifer.utils.MOELIST_PAGELINK
+import io.github.jan.supabase.auth.handleDeeplinks
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.koin.androidx.compose.KoinAndroidContext
@@ -78,6 +86,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // 🚀 Handle Supabase OAuth deep links on app launch
+        client.handleDeeplinks(intent)
+
+        // 🚀 Listen for Supabase session changes and update app state dynamically
+        client.handleDeeplinks(intent)
+
+        client.handleDeeplinks(intent)
+
+        lifecycleScope.launch {
+            client.auth.sessionStatus.collectLatest { status ->
+                if (status is SessionStatus.Authenticated) {
+                    val token = client.auth.currentAccessTokenOrNull()
+                    if (!token.isNullOrEmpty()) {
+                        App.accessToken = token
+                    }
+                }
+            }
+        }
 
         checkLoginIntent(intent)
 
@@ -184,6 +210,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        client.handleDeeplinks(intent) // Also handle if app is already open in background
         checkLoginIntent(intent)
     }
 
@@ -212,13 +239,8 @@ class MainActivity : AppCompatActivity() {
             val mediaType = intent.getStringExtra("media_type")?.uppercase()
             if (mediaId != 0 && mediaType != null) return mediaId to mediaType
         } else if (intent.data != null) {
-            // Manually handle deep links because the uri pattern in the compose navigation
-            // matches this -> https://myanimelist.net/manga/11514
-            // but not this -> https://myanimelist.net/manga/11514/Otoyomegatari
-            //TODO: find a better solution :)
             val malSchemeIndex = intent.dataString?.indexOf("myanimelist.net")
             if (malSchemeIndex != null && malSchemeIndex != -1) {
-                // Only handle main details links
                 val isMainDetails = intent.data?.pathSegments?.any {
                     when (it) {
                         "character", "episode", "video", "reviews", "stacks", "news", "forum",
@@ -244,7 +266,7 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun MainView(
     isCompactScreen: Boolean,
-    isLoggedIn: Boolean,
+    isLoggedIn: Boolean = !accessToken.isNullOrEmpty() || client.auth.currentSessionOrNull() != null,
     useListTabs: Boolean,
     navController: NavHostController,
     navActionManager: NavActionManager,
