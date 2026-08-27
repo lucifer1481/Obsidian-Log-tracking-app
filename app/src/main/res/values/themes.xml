@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="BaseTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:colorAccent">@color/md_theme_primary</item>
+    </style>
+
+    <style name="AppTheme" parent="BaseTheme" />
+
+    <style name="Theme.MySplash" parent="Theme.SplashScreen.IconBackground">
+        <!-- 🚀 FIXED: Forced pure black background for the system splash screen -->
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <!-- 🚀 FIXED: Changed the icon background to pitch black -->
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/black</item>
+        <!-- 🚀 FIXED: Replaced the old purple splash icon with your app's main launcher icon -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Theme.AppWidget.AppWidgetContainer" parent="BaseTheme" />
+
+    <style name="Widget.AppWidget.AppWidget.Container" parent="android:Widget">
+        <item name="android:id">@android:id/background</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:background">@drawable/widget_background</item>
+    </style>
+
+</resources>
