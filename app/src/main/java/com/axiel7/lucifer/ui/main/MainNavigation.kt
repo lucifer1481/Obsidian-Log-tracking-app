@@ -377,6 +377,14 @@ fun MainNavigation(
                 navActionManager = navActionManager
             )
         }
+        composable<Route.ExploreCategory> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.ExploreCategory>()
+            ExploreCategoryView(
+                category = route.category,
+                navActionManager = navActionManager,
+                padding = padding
+            )
+        }
 
         composable<Route.CustomMedia> { backStackEntry ->
             val route = backStackEntry.toRoute<Route.CustomMedia>()

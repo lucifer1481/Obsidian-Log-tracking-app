@@ -58,15 +58,17 @@ fun ExploreView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(bottom = 88.dp) // Accounts for bottom nav bar
+                contentPadding = PaddingValues(bottom = 88.dp)
             ) {
 
-                // TRENDING MOVIES
+                // TRENDING MOVIES -> Opens Movies Explore Category Page
                 if (uiState.trendingMovies.isNotEmpty()) {
                     item {
                         HeaderHorizontalList(
                             text = "Trending Movies",
-                            onClick = dropUnlessResumed { navActionManager.toExploreCategory("MOVIES") }
+                            onClick = dropUnlessResumed {
+                                navActionManager.toExploreCategory("MOVIES")
+                            }
                         )
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -86,12 +88,15 @@ fun ExploreView(
                     }
                 }
 
-                // POPULAR SERIES
+                // POPULAR SERIES -> Opens Series Explore Category Page
                 if (uiState.popularSeries.isNotEmpty()) {
                     item {
                         HeaderHorizontalList(
                             text = "Popular Series",
-                            onClick = dropUnlessResumed { navActionManager.toExploreCategory("SERIES") })
+                            onClick = dropUnlessResumed {
+                                navActionManager.toExploreCategory("SERIES")
+                            }
+                        )
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -110,12 +115,14 @@ fun ExploreView(
                     }
                 }
 
-                // TRENDING GAMES
+                // TRENDING GAMES -> Opens Games Explore Category Page
                 if (uiState.trendingGames.isNotEmpty()) {
                     item {
                         HeaderHorizontalList(
                             text = "Most Anticipated Games",
-                            onClick = dropUnlessResumed { navActionManager.toExploreCategory("GAMES") }
+                            onClick = dropUnlessResumed {
+                                navActionManager.toExploreCategory("GAMES")
+                            }
                         )
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),

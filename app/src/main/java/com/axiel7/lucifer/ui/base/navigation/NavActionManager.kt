@@ -80,6 +80,8 @@ class NavActionManager(
         navController.navigate(destination)
     }
 
+
+
     companion object {
         @Composable
         fun rememberNavActionManager(
