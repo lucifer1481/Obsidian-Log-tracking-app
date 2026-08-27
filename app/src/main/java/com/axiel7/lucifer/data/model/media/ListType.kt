@@ -1,0 +1,28 @@
+package com.axiel7.lucifer.data.model.media
+
+import com.axiel7.lucifer.data.repository.DefaultPreferencesRepository
+
+data class ListType(
+    val status: ListStatus,
+    val mediaType: MediaType,
+) {
+    fun stylePreference(
+        defaultPreferencesRepository: DefaultPreferencesRepository
+    ) = when (status) {
+        ListStatus.WATCHING -> defaultPreferencesRepository.animeCurrentListStyle
+        ListStatus.READING -> defaultPreferencesRepository.mangaCurrentListStyle
+        ListStatus.PLAN_TO_WATCH -> defaultPreferencesRepository.animePlannedListStyle
+        ListStatus.PLAN_TO_READ -> defaultPreferencesRepository.mangaPlannedListStyle
+        ListStatus.COMPLETED ->
+            if (mediaType == MediaType.ANIME) defaultPreferencesRepository.animeCompletedListStyle
+            else defaultPreferencesRepository.mangaCompletedListStyle
+
+        ListStatus.ON_HOLD ->
+            if (mediaType == MediaType.ANIME) defaultPreferencesRepository.animePausedListStyle
+            else defaultPreferencesRepository.mangaPausedListStyle
+
+        ListStatus.DROPPED ->
+            if (mediaType == MediaType.ANIME) defaultPreferencesRepository.animeDroppedListStyle
+            else defaultPreferencesRepository.mangaDroppedListStyle
+        }
+}

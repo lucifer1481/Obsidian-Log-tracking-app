@@ -1,0 +1,75 @@
+package com.axiel7.lucifer.data.model.media
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.pluralStringResource
+import com.axiel7.lucifer.R
+import com.axiel7.lucifer.data.model.anime.AnimeNode
+import com.axiel7.lucifer.data.model.anime.NodeSeasonal
+import com.axiel7.lucifer.data.model.manga.MangaNode
+import com.axiel7.lucifer.utils.UNKNOWN_CHAR
+
+abstract class BaseMediaNode {
+    abstract val id: Int
+    abstract val title: String
+    abstract val alternativeTitles: AlternativeTitles?
+    abstract val mainPicture: MainPicture?
+    open val numListUsers: Int? = null
+    abstract val mediaFormat: MediaFormat?
+    abstract val status: MediaStatus?
+    abstract val mean: Float?
+    open val myListStatus: BasicMyListStatus? = null
+
+    val mediaType
+        get() = if (this is MangaNode) MediaType.MANGA else MediaType.ANIME
+
+    // 🚀 FIXED: Forces English first for all grid and list posters!
+    fun userPreferredTitle(): String {
+        return alternativeTitles?.en?.takeIf { it.isNotBlank() } ?: title
+    }
+
+    fun title(language: TitleLanguage) = when (language) {
+        TitleLanguage.ROMAJI -> title
+        TitleLanguage.ENGLISH ->
+            if (alternativeTitles?.en.isNullOrBlank()) title
+            else alternativeTitles?.en ?: title
+
+        TitleLanguage.JAPANESE ->
+            if (alternativeTitles?.ja.isNullOrBlank()) title
+            else alternativeTitles?.ja ?: title
+    }
+
+    fun totalDuration() = when (this) {
+        is AnimeNode -> this.numEpisodes.takeIf { it != 0 }
+        is MangaNode -> this.numChapters.takeIf { it != 0 }
+        is NodeSeasonal -> this.numEpisodes.takeIf { it != 0 }
+        else -> null
+    }
+
+    fun totalVolumes() = (this as? MangaNode)?.numVolumes?.takeIf { it != 0 }
+
+    @Composable
+    fun durationText() = when (this) {
+        is AnimeNode, is NodeSeasonal -> {
+            val totalDuration = this.totalDuration()
+            if (totalDuration != null && totalDuration > 0) {
+                pluralStringResource(
+                    id = R.plurals.num_episodes,
+                    count = totalDuration,
+                    totalDuration
+                )
+            } else UNKNOWN_CHAR
+        }
+
+        is MangaNode -> {
+            if (numChapters != null && numChapters > 0) {
+                pluralStringResource(
+                    id = R.plurals.num_chapters,
+                    count = numChapters,
+                    numChapters
+                )
+            } else UNKNOWN_CHAR
+        }
+
+        else -> UNKNOWN_CHAR
+    }
+}

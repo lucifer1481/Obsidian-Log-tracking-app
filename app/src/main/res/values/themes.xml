@@ -7,13 +7,13 @@
 
     <style name="AppTheme" parent="BaseTheme" />
 
-    <style name="Theme.MySplash" parent="Theme.SplashScreen.IconBackground">
+    <style name="Theme.MySplash" parent="Theme.SplashScreen">
         <!-- 🚀 FIXED: Forced pure black background for the system splash screen -->
         <item name="windowSplashScreenBackground">@android:color/black</item>
         <!-- 🚀 FIXED: Changed the icon background to pitch black -->
         <item name="windowSplashScreenIconBackgroundColor">@android:color/black</item>
         <!-- 🚀 FIXED: Replaced the old purple splash icon with your app's main launcher icon -->
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
         <item name="postSplashScreenTheme">@style/AppTheme</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>

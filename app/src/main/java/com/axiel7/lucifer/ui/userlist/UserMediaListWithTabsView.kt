@@ -1,0 +1,141 @@
+package com.axiel7.lucifer.ui.userlist
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.axiel7.lucifer.data.model.media.ListStatus.Companion.listStatusValues
+import com.axiel7.lucifer.data.model.media.MediaType
+import com.axiel7.lucifer.ui.base.TabRowItem
+import com.axiel7.lucifer.ui.base.navigation.NavActionManager
+import com.axiel7.lucifer.ui.composables.LoadingDialog
+import com.axiel7.lucifer.ui.composables.TabRowWithPager
+import com.axiel7.lucifer.ui.editmedia.EditMediaSheet
+import com.axiel7.lucifer.ui.userlist.composables.MediaListSortDialog
+import com.axiel7.lucifer.ui.userlist.composables.SetScoreDialog
+import com.axiel7.lucifer.utils.ContextExtensions.showToast
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserMediaListWithTabsView(
+    mediaType: MediaType,
+    isCompactScreen: Boolean,
+    navActionManager: NavActionManager,
+    padding: PaddingValues,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
+    val tabRowItems = remember {
+        listStatusValues(mediaType)
+            .map {
+                TabRowItem(value = it, title = it.stringRes)
+            }.toTypedArray()
+    }
+    val editSheetState = rememberModalBottomSheetState()
+    var showEditSheet by remember { mutableStateOf(false) }
+    fun hideEditSheet() {
+        scope.launch { editSheetState.hide() }.invokeOnCompletion { showEditSheet = false }
+    }
+
+    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
+
+    TabRowWithPager(
+        tabs = tabRowItems,
+        modifier = Modifier
+            .padding(
+                top = padding.calculateTopPadding(),
+            ),
+        beyondBoundsPageCount = -1,
+        isTabScrollable = true
+    ) {
+        val listStatus = tabRowItems[it].value
+        val viewModel: UserMediaListViewModel = koinViewModel(
+            key = listStatus.name,
+            parameters = { parametersOf(mediaType, listStatus) }
+        )
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        if (uiState.openSortDialog && uiState.listSort != null) {
+            MediaListSortDialog(
+                uiState = uiState,
+                event = viewModel
+            )
+        }
+
+        if (uiState.openSetScoreDialog) {
+            SetScoreDialog(
+                onDismiss = { viewModel.toggleSetScoreDialog(false) },
+                onConfirm = viewModel::setScore
+            )
+        }
+
+        if (uiState.isLoadingRandom) {
+            LoadingDialog()
+        }
+
+        if (showEditSheet && uiState.mediaInfo != null) {
+            EditMediaSheet(
+                sheetState = editSheetState,
+                mediaInfo = uiState.mediaInfo!!,
+                myListStatus = uiState.myListStatus,
+                bottomPadding = systemBarsPadding.calculateBottomPadding(),
+                onEdited = { status, removed ->
+                    hideEditSheet()
+                    viewModel.onChangeItemMyListStatus(status, removed)
+                },
+                onDismissed = { hideEditSheet() }
+            )
+        }
+
+        LaunchedEffect(uiState.randomId) {
+            uiState.randomId?.let { id ->
+                navActionManager.toMediaDetails(uiState.mediaType, id)
+                viewModel.onRandomIdOpen()
+            }
+        }
+
+        LaunchedEffect(uiState.message) {
+            if (uiState.message != null) {
+                context.showToast(uiState.message.orEmpty())
+                viewModel.onMessageDisplayed()
+            }
+        }
+
+        if (uiState.listSort != null) {
+            UserMediaListView(
+                uiState = uiState,
+                event = viewModel,
+                navActionManager = navActionManager,
+                isCompactScreen = isCompactScreen,
+                contentPadding = PaddingValues(
+                    bottom = padding.calculateBottomPadding() +
+                            systemBarsPadding.calculateBottomPadding()
+                ),
+                onShowEditSheet = { item ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.onItemSelected(item)
+                    showEditSheet = true
+                },
+            )
+        }
+    }//:Pager
+}

@@ -21,14 +21,14 @@
 #-renamesourcefileattribute SourceFile
 
 # My POJO class directory
--keep public class com.axiel7.moelist.data.model.* {
+-keep public class com.axiel7.lucifer.data.model.* {
   public void set*(***);
   public *** get*();
   public protected private *;
 }
 
 -keepattributes *Annotation*, InnerClasses
--keep,includedescriptorclasses class com.axiel7.moelist.**$$serializer { *; }
+-keep,includedescriptorclasses class com.axiel7.lucifer.**$$serializer { *; }
 
 -keepclassmembers class * extends androidx.datastore.preferences.protobuf.GeneratedMessageLite {
     <fields>;

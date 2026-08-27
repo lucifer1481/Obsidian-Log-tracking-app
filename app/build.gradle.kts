@@ -19,11 +19,12 @@ android {
     compileSdk = 36
 
     base {
-        archivesName = "moelist-v${versionProps.getProperty("name")}"
+        // 🚀 CHANGED: Now outputs APKs as "Lucifer-<version>" instead of Obsidian Log
+        archivesName = "Lucifer-${versionProps.getProperty("name")}"
     }
 
     defaultConfig {
-        applicationId = "com.axiel7.moelist"
+        applicationId = "com.axiel7.lucifer" // 🚀 CHANGED: Updated package namespace/ID to match your new app name
         minSdk = 23
         targetSdk = 36
         versionCode = versionProps.getProperty("code").toInt()
@@ -54,7 +55,7 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "CLIENT_ID", privateProps.getProperty("CLIENT_ID"))
-            resValue("string", "app_name", "MoeList Debug")
+            // 🚀 REMOVED the hardcoded "MoeList Debug" resValue so it reads cleanly from strings.xml / app_name!
         }
         release {
             isDebuggable = false
@@ -95,7 +96,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    namespace = "com.axiel7.moelist"
+    namespace = "com.axiel7.lucifer" // Kept package namespace matching code structure so imports don't break
 }
 
 dependencies {

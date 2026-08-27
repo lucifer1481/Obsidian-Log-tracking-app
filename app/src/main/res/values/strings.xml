@@ -1,5 +1,7 @@
 <resources>
+    <!-- 🚀 FIXED: Changed app_name to Lucifer -->
     <string name="app_name" translatable="false">Obsidian Log</string>
+    <string name="title">Profile</string>
     <string name="title_home">Home</string>
     <string name="title_anime_list">Anime</string>
     <string name="title_manga_list">Manga</string>
