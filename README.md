@@ -18,6 +18,12 @@ You can download the latest version of Obsidian Log directly to your Android dev
 2. Download the `Obsidian_Log.apk` file.
 3. Open the file on your phone to install (you may need to allow "Install from unknown sources").
 
+## ⚠️ Troubleshooting & Network Setup (Private DNS)
+Because TMDB and certain media APIs can occasionally be restricted by specific internet service providers (ISPs) or regional network configurations, you may need to configure a Private DNS on your test device or emulator for the Movies and Series databases to load correctly:
+1. Go to your device **Settings** -> **Network & Internet** -> **Private DNS** -> **Private DNS provider hostname**.
+2. Set it to `dns.adguard.com` (or `cloudflare-dns.com`). 
+3. This bypasses local domain blocks to ensure smooth image loading and metadata fetching for all custom media items.
+
 ## 🛠️ Built With
 * **Kotlin & Jetpack Compose** - UI and core logic.
 * **Supabase** - Cloud database.
